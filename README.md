@@ -75,3 +75,47 @@
 
     - Real-Time Detector에 대해서 성능 속도면에서 더 좋은것을 볼 수 있다.
       - Fast Yolo의 경우 앞의 20개의 Conv Layer대신 9만 사용한 모델이다.
+
+# Implementation
+
+- data directory 구조
+  ```
+  data
+  ├── _train
+  │   ├── Annotation 
+  │   └── Image
+  └──_valid
+     ├── Annotation
+     └── Image
+  ```
+    
+  - train : PASCAL Voc 2007 (train + test), PASCAL Voc 2012 (train)
+  - valid : PASCAL Voc 2012 (valid)
+
+- Loss function
+  - Label자체를 predict와 똑같은 shape이 되도록 작성하였기 때문에 필요한 부분만 SSE를 사용해 계산
+- Pretrain
+  - model을 만들어 놓기는 했는데 Image net Data 크기가 너무 커서 포기
+  - torchvision.model의 GooLeNet pretrain된 모델을 사용
+- 결과 (Image)
+  - 학습이 끝난 후 Valid Data출력 확인
+  - Good
+    ![image/good1.png](image/good1.png) ![image/good2.png](image/good2.png)
+  - Bad
+    ![image/bad1.png](image/bad1.png) ![image/bad2.png](image/bad2.png)
+- 논문과 다르게 구현한 곳
+  - Activation Function
+    - 논문에서는 leakyReLU를 사용하였지만 width, height Loss를 계산할 때 sqrt를 해야해서 relu로 변경
+    - pretrain model을 GoogLeNet 그대로 사용
+- 개선 혹은 수정 해야할곳
+  - 학습 속도 관련
+    - Dataset에서 label을 만들어주지 않고 미리 파일로 만들어놓고 하면 속도가 더 빨라질 수 있을것 같음
+  - 성능 관련
+    - box의 크기가 정확하지 않거나 조금씩 밀려있는 경우가 있다.
+      
+      -> Loss function을 조금 더 개선해야 할 것 같다.
+
+    - 같은 객체를 서로 다른 box로 잡아내는 경우가 많다.
+      
+      -> NMS, getbox부분 box의 width, height가 너무 작은 경우 무시하도록 개선해야할 것 같다.
+  
